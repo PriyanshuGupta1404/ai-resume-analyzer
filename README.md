@@ -101,3 +101,9 @@ The application should now be running at http://localhost:5173.
 # 📄 License
 
 This project is open-source and available under the MIT License.
+
+## 📬 Contact
+
+- 🔗 GitHub: [@PriyanshuGupta1404](https://github.com/priyanshugupta1404)
+- 🧑‍💻 LinkedIn: [@PriyanshuGupta1404](https://linkedin.com/in/priyanshugupta0551)
+- 📩 Email: priyanshugupta1404@gmail.com
