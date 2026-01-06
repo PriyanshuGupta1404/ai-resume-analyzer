@@ -42,7 +42,7 @@ const App = () => {
     setError(null);
 
     // API handling for the execution environment
-    const apiKey = "";
+    const apiKey = "AIzaSyDOW90B8htruAcNxrGFGT3ubrCLlG7Lu3o";
 
     const systemPrompt = `You are an expert technical recruiter and ATS (Applicant Tracking System) optimizer. 
     Analyze the provided resume against the job description. 
