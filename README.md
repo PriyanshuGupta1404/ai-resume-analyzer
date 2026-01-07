@@ -1,22 +1,24 @@
 # TalentLens AI: Advanced Resume Analyzer
 
-TalentLens AI is a modern, high-performance web application designed to help job seekers optimize their resumes for Applicant Tracking Systems (ATS). By leveraging the Gemini 2.5 Flash API, the tool provides deep, contextual analysis of a resume against a specific job description, offering actionable insights and interview preparation.
+TalentLens AI is a modern, AI-powered web application designed to help job seekers optimize their resumes for Applicant Tracking Systems (ATS). This project demonstrates the integration of Generative AI with a clean, responsive React frontend.
+
+# 🌟 Overview
+
+Most job seekers struggle to get past automated filters. TalentLens AI solves this by using the Gemini 2.5 Flash API to "read" your resume like a recruiter would, providing a match score and specific advice on how to improve your alignment with a job description.
 
 # 🚀 Key Features
 
-- Contextual Match Scoring: Get a percentage-based score indicating how well your profile aligns with a specific role.
+- 3-Step Analysis Workflow:
 
-- Executive Summary: Receive an AI-generated overview of your candidacy from a recruiter's perspective.
+1. Resume Input: Paste raw resume text (eliminates PDF parsing errors).
+2. Job Context: Paste the target job description.
+3. AI Dashboard: View a comprehensive report with match scores, strengths, and gaps.
 
-- Keyword Intelligence: Identify which industry-standard keywords are present in your resume and which critical ones are missing.
+- ATS Intelligence: Identifies missing keywords that are crucial for passing automated HR filters.
 
-- SWOT-style Analysis: Detailed breakdown of your key strengths and identified gaps for the target position.
+- Strategic Advice: Generates actionable "Action Items" to improve resume impact.
 
-- Strategic Recommendations: Tailored suggestions to improve your resume's impact and clarity.
-
-- Interview Prep: Automatically generates anticipated interview questions based on the role requirements and your experience.
-
-- Privacy Focused: Your data is processed in real-time via encrypted API calls and is never stored on a persistent database.
+- Interview Prep: Provides custom practice questions tailored to the specific role and your background.
 
 # 🛠️ Technical Stack
 
@@ -28,7 +30,7 @@ TalentLens AI is a modern, high-performance web application designed to help job
 
 - AI Engine: Google Gemini 2.5 Flash API
 
-- State Management: React Hooks (useState, useEffect)
+- Deployment Ready: Optimized for Vite
 
 # 📋 Prerequisites
 
