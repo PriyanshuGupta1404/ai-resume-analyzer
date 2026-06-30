@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+// Importing icons from the lucide-react library
 import {
   FileText,
   Search,
@@ -13,82 +14,64 @@ import {
   Target,
   FileEdit,
   Sparkles,
-  ClipboardCheck,
-  RefreshCw,
 } from "lucide-react";
 
 const App = () => {
   // --- STATE VARIABLES ---
+  // Using simple states to manage the user input and app flow
   const [resumeContent, setResumeContent] = useState("");
   const [jobContent, setJobContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [analysisData, setAnalysisData] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [currentStep, setCurrentStep] = useState(1);
-  const [copiedId, setCopiedId] = useState(null);
 
   // --- HANDLER FUNCTIONS ---
 
-  const copyToClipboard = (text, id) => {
-    const textArea = document.createElement("textarea");
-    textArea.value = text;
-    document.body.appendChild(textArea);
-    textArea.select();
-    try {
-      document.execCommand("copy");
-      setCopiedId(id);
-      setTimeout(() => setCopiedId(null), 2000);
-    } catch (err) {
-      console.error("Fallback: Oops, unable to copy", err);
-    }
-    document.body.removeChild(textArea);
-  };
-
+  // Function to move from Step 1 to Step 2
   const goToNextStep = () => {
     if (resumeContent.trim().length < 50) {
-      setErrorMessage(
-        "Your resume text is too short. Please paste the full content!",
-      );
+      setErrorMessage("Please paste a bit more of your resume first!");
       return;
     }
     setErrorMessage("");
     setCurrentStep(2);
   };
 
+  // Function to call the Gemini API
   const startAnalysis = async () => {
     if (!resumeContent || !jobContent) {
-      setErrorMessage("Both fields are required for analysis.");
+      setErrorMessage("Please make sure both fields are filled in.");
       return;
     }
 
     setLoading(true);
     setErrorMessage("");
 
-    // REPLACE WITH YOUR INDIVIDUAL API KEY FROM GOOGLE AI STUDIO (aistudio.google.com)
-    const API_KEY = "";
+    // API Key - Users should put their key here
+    const API_KEY = "AIzaSyDOW90B8htruAcNxrGFGT3ubrCLlG7Lu3o";
 
-    if (!API_KEY) {
-      setErrorMessage(
-        "API Key is missing! Please paste your personal API key from Google AI Studio on Line 66.",
-      );
+    if (API_KEY === "") {
+      setErrorMessage("Missing API Key! Please add it to the code (line 53).");
       setLoading(false);
       return;
     }
 
+    // Creating the instruction for the AI
     const systemInstruction = `
-      You are an expert Senior Technical Recruiter. 
-      Analyze the resume against the job description with high strictness.
+      You are a professional hiring manager. 
+      Analyze the resume against the job description.
       
-      Return ONLY a JSON object:
+      You must return ONLY a JSON object with this exact structure:
       {
-        "matchScore": number (0-100),
-        "executiveSummary": "string (2 sentences)",
-        "strengths": ["list of 3 key strengths"],
-        "gaps": ["list of 3 critical gaps"],
-        "keywordsFound": ["top 5 found"],
-        "keywordsMissing": ["top 5 missing"],
-        "suggestions": ["3 actionable bullet points"],
-        "interviewPrep": ["3 specific behavior or technical questions"]
+        "matchScore": number,
+        "executiveSummary": "string",
+        "strengths": ["list of strings"],
+        "gaps": ["list of strings"],
+        "keywordsFound": ["list of strings"],
+        "keywordsMissing": ["list of strings"],
+        "suggestions": ["list of strings"],
+        "interviewPrep": ["list of strings"]
       }
     `;
 
@@ -98,46 +81,49 @@ const App = () => {
     `;
 
     try {
-      // UPDATED MODEL: Using the generally available, stable 'gemini-2.5-flash' endpoint
+      // Basic fetch request to Google Gemini API
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${API_KEY}`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify({
             contents: [{ parts: [{ text: userPrompt }] }],
             systemInstruction: { parts: [{ text: systemInstruction }] },
             generationConfig: {
               responseMimeType: "application/json",
-              temperature: 0.15,
+              temperature: 0.2,
             },
           }),
         },
       );
 
+      // Checking if response is okay
       if (!response.ok) {
-        const errDetails = await response.json();
         throw new Error(
-          errDetails.error?.message || "Google API returned an error status.",
+          "API call failed. Please check your internet or API key.",
         );
       }
 
       const data = await response.json();
-      const parsedData = JSON.parse(data.candidates[0].content.parts[0].text);
+      const aiResponseText = data.candidates[0].content.parts[0].text;
+
+      // Parsing the JSON string into a JavaScript object
+      const parsedData = JSON.parse(aiResponseText);
 
       setAnalysisData(parsedData);
-      setCurrentStep(3);
+      setCurrentStep(3); // Move to results page
     } catch (err) {
-      setErrorMessage(
-        "Analysis failed: " +
-          err.message +
-          ". Double check your API key, model and network connections.",
-      );
+      console.error(err);
+      setErrorMessage("Could not finish analysis. " + err.message);
     } finally {
       setLoading(false);
     }
   };
 
+  // Reset function to clear everything and start over
   const resetApp = () => {
     setResumeContent("");
     setJobContent("");
@@ -146,69 +132,68 @@ const App = () => {
     setCurrentStep(1);
   };
 
-  const getScoreColor = (score) => {
-    if (score >= 70) return "text-green-600 border-green-100 bg-green-50";
-    if (score >= 40) return "text-amber-600 border-amber-100 bg-amber-50";
-    return "text-red-600 border-red-100 bg-red-50";
-  };
-
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-20">
-      {/* Navbar */}
-      <nav className="bg-white border-b border-slate-200 py-4 sticky top-0 z-50">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
+      {/* Simple Navigation / Header */}
+      <nav className="bg-white border-b border-slate-200 py-4 shadow-sm">
         <div className="max-w-6xl mx-auto px-6 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <div className="bg-blue-600 p-2 rounded-lg text-white">
-              <BrainCircuit className="w-6 h-6" />
+            <div className="bg-blue-600 p-2 rounded-lg">
+              <BrainCircuit className="text-white w-6 h-6" />
             </div>
-            <span className="text-xl font-black tracking-tight text-slate-800">
-              TalentLens<span className="text-blue-600">AI</span>
+            <span className="text-xl font-bold text-slate-800">
+              TalentLens AI
             </span>
           </div>
 
-          <div className="flex gap-3">
-            {[1, 2, 3].map((num) => (
+          <div className="flex gap-2">
+            {[1, 2, 3].map((stepNumber) => (
               <div
-                key={num}
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                  currentStep === num
-                    ? "bg-blue-600 text-white scale-110 shadow-md"
-                    : currentStep > num
+                key={stepNumber}
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
+                  currentStep === stepNumber
+                    ? "bg-blue-600 text-white"
+                    : currentStep > stepNumber
                       ? "bg-green-500 text-white"
-                      : "bg-slate-200 text-slate-400"
+                      : "bg-slate-200 text-slate-500"
                 }`}
               >
-                {currentStep > num ? <CheckCircle className="w-4 h-4" /> : num}
+                {currentStep > stepNumber ? (
+                  <CheckCircle className="w-4 h-4" />
+                ) : (
+                  stepNumber
+                )}
               </div>
             ))}
           </div>
         </div>
       </nav>
 
-      {}
-      <main className="max-w-4xl mx-auto px-6 mt-10">
+      <main className="max-w-5xl mx-auto px-6 py-10">
+        {/* Error Notification */}
         {errorMessage && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-xl flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
-            <span className="text-sm font-bold">{errorMessage}</span>
+          <div className="mb-6 p-4 bg-red-100 border border-red-200 text-red-700 rounded-lg flex items-center gap-3">
+            <AlertCircle className="w-5 h-5" />
+            <p className="text-sm font-medium">{errorMessage}</p>
           </div>
         )}
 
-        {/* STEP 1: RESUME INPUT */}
+        {/* STEP 1: Paste Resume */}
         {currentStep === 1 && (
-          <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-xl transition-all">
-            <h2 className="text-2xl font-extrabold mb-2 flex items-center gap-2">
-              <FileEdit className="text-blue-600" />
-              1. Resume Content
-            </h2>
-            <p className="text-slate-500 mb-6">
-              Paste your resume text. AI will look for skills and experience
-              gaps.
-            </p>
+          <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm animate-in fade-in duration-300">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold flex items-center gap-2">
+                <FileEdit className="text-blue-600" />
+                Step 1: Paste Your Resume
+              </h2>
+              <p className="text-slate-500 mt-1">
+                Copy the text from your resume and paste it below.
+              </p>
+            </div>
 
             <textarea
-              className="w-full h-80 p-5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all text-slate-700 font-mono text-sm"
-              placeholder="Paste text here..."
+              className="w-full h-80 p-5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-slate-700 leading-relaxed"
+              placeholder="E.g. Professional Summary, Experience, Skills..."
               value={resumeContent}
               onChange={(e) => setResumeContent(e.target.value)}
             />
@@ -216,29 +201,28 @@ const App = () => {
             <div className="mt-8 flex justify-end">
               <button
                 onClick={goToNextStep}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-blue-200 transition-transform active:scale-95"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-3 rounded-lg font-bold flex items-center gap-2 transition-transform active:scale-95"
               >
-                Proceed to Job Details
+                Next Step
                 <ChevronRight className="w-5 h-5" />
               </button>
             </div>
           </div>
         )}
 
-        {/* STEP 2: JOB INPUT */}
+        {/* STEP 2: Job Description */}
         {currentStep === 2 && (
-          <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-xl">
-            <h2 className="text-2xl font-extrabold mb-2 flex items-center gap-2">
-              <Target className="text-blue-600" />
-              2. Target Role
-            </h2>
-            <p className="text-slate-500 mb-6">
-              Paste the job description to calculate your match accuracy.
-            </p>
+          <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm animate-in fade-in duration-300">
+            <div className="mb-6 text-center">
+              <h2 className="text-2xl font-bold">Step 2: Job Description</h2>
+              <p className="text-slate-500">
+                Paste the job requirements you are applying for.
+              </p>
+            </div>
 
             <textarea
-              className="w-full h-80 p-5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all"
-              placeholder="Paste job description here..."
+              className="w-full h-80 p-5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-700"
+              placeholder="Paste the job title, responsibilities, and requirements here..."
               value={jobContent}
               onChange={(e) => setJobContent(e.target.value)}
             />
@@ -246,22 +230,24 @@ const App = () => {
             <div className="mt-8 flex gap-4">
               <button
                 onClick={() => setCurrentStep(1)}
-                className="px-6 py-4 text-slate-500 font-bold hover:bg-slate-100 rounded-xl transition-colors"
+                className="flex-1 border border-slate-300 text-slate-600 font-bold py-3 rounded-lg hover:bg-slate-50 transition-colors"
               >
                 Back
               </button>
               <button
                 onClick={startAnalysis}
                 disabled={loading}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-3 shadow-lg disabled:opacity-50"
+                className="flex-[2] bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-3 transition-colors disabled:bg-blue-400"
               >
                 {loading ? (
                   <>
-                    <Loader2 className="w-6 h-6 animate-spin" /> Processing...
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Analyzing...
                   </>
                 ) : (
                   <>
-                    Run AI Analysis <Sparkles className="w-5 h-5" />
+                    Start Analysis
+                    <Target className="w-5 h-5" />
                   </>
                 )}
               </button>
@@ -269,141 +255,139 @@ const App = () => {
           </div>
         )}
 
-        {/* STEP 3: RESULTS */}
+        {/* STEP 3: Results Dashboard */}
         {currentStep === 3 && analysisData && (
-          <div className="space-y-6 animate-in fade-in duration-700">
-            {/* Score & Summary */}
+          <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+            {/* Main Score Area */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div
-                className={`p-8 rounded-3xl border-2 text-center shadow-sm ${getScoreColor(analysisData.matchScore)}`}
-              >
-                <div className="text-5xl font-black mb-1">
-                  {analysisData.matchScore}%
+              <div className="bg-white p-10 rounded-xl border border-slate-200 text-center shadow-sm">
+                <div className="inline-flex items-center justify-center w-32 h-32 rounded-full border-8 border-blue-50 bg-blue-50 mb-4">
+                  <span className="text-4xl font-black text-blue-600">
+                    {analysisData.matchScore}%
+                  </span>
                 </div>
-                <div className="text-xs font-bold uppercase tracking-widest opacity-70">
-                  ATS Score
-                </div>
-              </div>
-
-              <div className="md:col-span-2 bg-white p-8 rounded-3xl border border-slate-200 flex flex-col justify-center">
-                <h3 className="text-xs font-black uppercase text-blue-600 tracking-tighter mb-2">
-                  AI Summary
+                <h3 className="text-xl font-bold text-slate-800">
+                  Match Score
                 </h3>
-                <p className="text-slate-700 italic font-medium leading-relaxed">
-                  "{analysisData.executiveSummary}"
+                <p className="text-sm text-slate-500 mt-2">
+                  How well your resume fits this job.
                 </p>
               </div>
-            </div>
 
-            {/* Keyword Analysis */}
-            <div className="bg-white p-8 rounded-3xl border border-slate-200">
-              <h3 className="font-bold text-slate-800 mb-4">Keyword Mapping</h3>
-              <div className="flex flex-wrap gap-2">
-                {analysisData.keywordsFound.map((kw, i) => (
-                  <span
-                    key={i}
-                    className="px-3 py-1 bg-green-50 text-green-700 rounded-lg text-xs font-bold border border-green-100"
-                  >
-                    +{kw}
-                  </span>
-                ))}
-                {analysisData.keywordsMissing.map((kw, i) => (
-                  <span
-                    key={i}
-                    className="px-3 py-1 bg-slate-100 text-slate-400 rounded-lg text-xs font-medium border border-slate-200 line-through"
-                  >
-                    {kw}
-                  </span>
-                ))}
+              <div className="md:col-span-2 bg-white p-8 rounded-xl border border-slate-200 shadow-sm">
+                <div className="flex items-center gap-2 mb-4 text-blue-600">
+                  <Sparkles className="w-5 h-5" />
+                  <h3 className="font-bold text-lg uppercase tracking-tight">
+                    AI Summary
+                  </h3>
+                </div>
+                <p className="text-slate-700 italic leading-relaxed text-lg">
+                  "{analysisData.executiveSummary}"
+                </p>
+
+                <div className="mt-6 flex flex-wrap gap-2">
+                  <p className="text-xs font-bold text-slate-400 w-full mb-1">
+                    Keywords Identified:
+                  </p>
+                  {analysisData.keywordsFound.map((kw, i) => (
+                    <span
+                      key={i}
+                      className="bg-green-100 text-green-700 px-3 py-1 rounded-md text-xs font-bold uppercase"
+                    >
+                      {kw}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
 
-            {/* Pros/Cons */}
+            {/* Pros and Cons */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white p-6 rounded-3xl border border-slate-200">
-                <h4 className="font-bold text-green-600 flex items-center gap-2 mb-4">
-                  <CheckCircle className="w-4 h-4" /> Top Strengths
+              <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm">
+                <h4 className="font-bold text-green-600 mb-4 flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5" />
+                  Top Strengths
                 </h4>
-                {analysisData.strengths.map((s, i) => (
-                  <div
-                    key={i}
-                    className="text-sm text-slate-600 mb-2 p-3 bg-slate-50 rounded-xl"
-                  >
-                    {s}
-                  </div>
-                ))}
+                <ul className="space-y-3">
+                  {analysisData.strengths.map((str, i) => (
+                    <li key={i} className="text-sm text-slate-600 flex gap-2">
+                      <span className="text-green-500">•</span>
+                      {str}
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <div className="bg-white p-6 rounded-3xl border border-slate-200">
-                <h4 className="font-bold text-amber-600 flex items-center gap-2 mb-4">
-                  <AlertCircle className="w-4 h-4" /> Priority Gaps
+
+              <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm">
+                <h4 className="font-bold text-amber-600 mb-4 flex items-center gap-2">
+                  <AlertCircle className="w-5 h-5" />
+                  Areas to Improve
                 </h4>
-                {analysisData.gaps.map((g, i) => (
-                  <div
-                    key={i}
-                    className="text-sm text-slate-600 mb-2 p-3 bg-slate-50 rounded-xl"
-                  >
-                    {g}
-                  </div>
-                ))}
+                <ul className="space-y-3">
+                  {analysisData.gaps.map((gap, i) => (
+                    <li key={i} className="text-sm text-slate-600 flex gap-2">
+                      <span className="text-amber-500">•</span>
+                      {gap}
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
 
-            {/* Action Items */}
-            <div className="bg-blue-600 p-8 rounded-3xl text-white">
-              <h4 className="font-bold mb-4 flex items-center gap-2 text-xl">
-                <Terminal className="w-5 h-5" /> How to Improve
+            {/* AI Tips */}
+            <div className="bg-blue-600 p-8 rounded-xl text-white shadow-lg">
+              <h4 className="font-bold text-xl mb-4 flex items-center gap-2">
+                <Copy className="w-6 h-6" />
+                Action Items
               </h4>
-              <div className="space-y-3">
-                {analysisData.suggestions.map((s, i) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {analysisData.suggestions.map((sug, i) => (
                   <div
                     key={i}
-                    className="bg-white/10 p-4 rounded-xl text-sm border border-white/10"
+                    className="bg-white/10 p-4 rounded-lg border border-white/20 text-sm"
                   >
-                    {s}
+                    {sug}
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Interview Prep */}
-            <div className="bg-white p-8 rounded-3xl border border-slate-200">
-              <h4 className="font-bold text-slate-800 mb-6 text-xl">
-                Interview Preparation
+            <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm">
+              <h4 className="font-bold text-slate-800 mb-6 flex items-center gap-2 text-xl">
+                <Search className="w-6 h-6 text-blue-600" />
+                Practice Questions
               </h4>
               <div className="space-y-4">
                 {analysisData.interviewPrep.map((q, i) => (
                   <div
                     key={i}
-                    className="group relative p-4 bg-slate-50 border border-slate-100 rounded-2xl hover:border-blue-300 transition-all"
+                    className="p-4 bg-slate-50 border border-slate-100 rounded-lg text-slate-700 text-sm"
                   >
-                    <p className="text-sm text-slate-700 pr-10">{q}</p>
-                    <button
-                      onClick={() => copyToClipboard(q, i)}
-                      className="absolute top-4 right-4 text-slate-400 hover:text-blue-600 transition-colors"
-                      title="Copy Question"
-                    >
-                      {copiedId === i ? (
-                        <ClipboardCheck className="w-5 h-5 text-green-500" />
-                      ) : (
-                        <Copy className="w-4 h-4" />
-                      )}
-                    </button>
+                    <span className="font-bold text-blue-600 mr-2">
+                      Q{i + 1}:
+                    </span>{" "}
+                    {q}
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="flex justify-center mt-10">
+            <div className="flex justify-center pb-10">
               <button
                 onClick={resetApp}
-                className="flex items-center gap-2 px-10 py-4 bg-slate-900 text-white font-bold rounded-full hover:bg-black transition-all"
+                className="bg-slate-800 text-white font-bold px-12 py-4 rounded-full hover:bg-slate-900 transition-all shadow-xl"
               >
-                <RefreshCw className="w-4 h-4" /> New Analysis
+                Restart New Check
               </button>
             </div>
           </div>
         )}
       </main>
+
+      <footer className="text-center py-10 border-t border-slate-200 text-slate-400 text-sm">
+        <p>Built as a Student Portfolio Project &copy; 2026</p>
+      </footer>
     </div>
   );
 };
