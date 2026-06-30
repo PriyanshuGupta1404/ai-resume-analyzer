@@ -51,7 +51,7 @@ const App = () => {
     setErrorMessage("");
 
     // Your working AQ API Key
-    const API_KEY = "";
+    const API_KEY = "AQ.Ab8RN6LPep-ExsNDbG0KMaHqUsk3oWzhp3DhdO0gyFGT3bLuqg";
 
     if (API_KEY === "") {
       setErrorMessage("Missing API Key! Please add it to the code.");
