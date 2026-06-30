@@ -65,7 +65,7 @@ const App = () => {
     setErrorMessage("");
 
     // REPLACE WITH YOUR INDIVIDUAL API KEY FROM GOOGLE AI STUDIO (aistudio.google.com)
-    const API_KEY = "";
+    const API_KEY = "AQ.Ab8RN6K57ZV4SwQAKAn1o--dED2Hye5_puzUInF5OlXScOMiwA";
 
     if (!API_KEY) {
       setErrorMessage(
