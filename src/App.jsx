@@ -38,7 +38,6 @@ const App = () => {
     setCurrentStep(2);
   };
 
-  // Function to call the Gemini API
   // Function to call the Gemini API using the official SDK
   const startAnalysis = async () => {
     if (!resumeContent || !jobContent) {
