@@ -49,7 +49,7 @@ const App = () => {
     setErrorMessage("");
 
     // API Key - Users should put their key here
-    const API_KEY = "AQ.Ab8RN6K57ZV4SwQAKAn1o--dED2Hye5_puzUInF5OlXScOMiwA";
+    const API_KEY = "AQ.Ab8RN6LBEoxTtGtfjyZH-CIrZFfDgkHXLF-OOpMt6x2AMug5uA";
 
     if (API_KEY === "") {
       setErrorMessage("Missing API Key! Please add it to the code (line 52).");
