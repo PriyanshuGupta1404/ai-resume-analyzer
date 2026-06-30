@@ -97,13 +97,13 @@ const App = () => {
               temperature: 0.2,
             },
           }),
-        }
+        },
       );
 
       // Checking if response is okay
       if (!response.ok) {
         throw new Error(
-          "API call failed. Please check your internet or API key."
+          "API call failed. Please check your internet or API key.",
         );
       }
 
@@ -154,8 +154,8 @@ const App = () => {
                   currentStep === stepNumber
                     ? "bg-blue-600 text-white"
                     : currentStep > stepNumber
-                    ? "bg-green-500 text-white"
-                    : "bg-slate-200 text-slate-500"
+                      ? "bg-green-500 text-white"
+                      : "bg-slate-200 text-slate-500"
                 }`}
               >
                 {currentStep > stepNumber ? (
