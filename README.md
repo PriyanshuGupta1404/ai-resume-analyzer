@@ -1,10 +1,12 @@
 # TalentLens AI: Advanced Resume Analyzer
 
-TalentLens AI is a modern, AI-powered web application designed to help job seekers optimize their resumes for Applicant Tracking Systems (ATS). This project demonstrates the integration of Generative AI with a clean, responsive React frontend.
+TalentLens AI is a modern, AI-powered full-stack web application designed to help job seekers optimize their resumes for Applicant Tracking Systems (ATS). This project demonstrates the secure integration of Generative AI using a Node.js/Express backend and a clean, responsive React frontend.
 
 # 🌟 Overview
 
 Most job seekers struggle to get past automated filters. TalentLens AI solves this by using the Gemini 2.5 Flash API to "read" your resume like a recruiter would, providing a match score and specific advice on how to improve your alignment with a job description.
+
+By utilizing a dedicated backend server, this application ensures that sensitive API keys are kept entirely secure and out of the browser, demonstrating enterprise-level security practices.
 
 # 🚀 Key Features
 
@@ -20,17 +22,23 @@ Most job seekers struggle to get past automated filters. TalentLens AI solves th
 
 - Interview Prep: Provides custom practice questions tailored to the specific role and your background.
 
+- Secure Architecture: Uses a Node.js intermediary server to protect API credentials.
+
 # 🛠️ Technical Stack
 
-- Frontend: React.js (Vite)
+- Frontend framework: React.js (Vite)
 
 - Styling: Tailwind CSS (Dark-themed, Glassmorphism UI)
 
 - Icons: Lucide React
 
-- AI Engine: Google Gemini 2.5 Flash API
+- Backend (Runtime): Node.js
 
-- Deployment Ready: Optimized for Vite
+- Backend (Framework): Express.js
+
+- AI SDK: @google/genai (Google Gemini 2.5 Flash API)
+
+- Security: dotenv for secret management, cors for cross-origin requests
 
 # 📋 Prerequisites
 
@@ -65,11 +73,12 @@ npm install -D tailwindcss postcss autoprefixer
 npx tailwindcss init -p
 ```
 
-4. Add your API Key:
-   Open src/App.jsx and locate the following line:
+4. Set up the Backend (Server)
+-Next, create a secure environment file to hold your API key. Inside the server directory, create a file named exactly .env and add the following:
 
 ```
-const apiKey = ""; // Add your Gemini API key here
+PORT=5000
+GEMINI_API_KEY=your_actual_api_key_here
 ```
 
 Paste your API key between the quotes.
@@ -84,22 +93,22 @@ The application should now be running at http://localhost:5173.
 
 # 🧠 How It Works
 
-1. Input Phase: Users paste their resume text and the job description into the secure interface.
+1. Input Phase: Users paste their resume and target job description into the React interface.
 
-2. Analysis Phase: The application sends a structured, high-context prompt to the Gemini 2.5 Flash model.
+2. Secure Transmission: React sends this data via a POST request to the local Node.js/Express backend.
 
-3. Response Handling: The AI returns a structured JSON object containing scores and analysis.
+3. AI Processing: The backend securely attaches the hidden API key, formats a strict JSON-demanding prompt, and communicates with the Gemini 2.5 Flash model.
 
-4. Visualization Phase: The React frontend parses the JSON to display interactive charts, keyword tags, and detailed insights.
+4. Data Parsing: The Express server receives the raw data, parses it into a clean JSON object, and sends it back to the client.
+
+5. Visualization Phase: The React frontend receives the JSON and dynamically maps the data into interactive charts, tags, and detailed insights.
 
 # ⚠️ Important Notes for Localhost
 
-- API Rate Limits: The free tier of the Gemini API has request limits. If you encounter errors, wait 60 seconds and try again.
+- API Rate Limits: The free tier of the Gemini API has request limits. If you encounter errors or the app gets stuck loading, wait 60 seconds and try again.
 
-- CORS Policies: If you encounter CORS errors on localhost, ensure your request headers match those in App.jsx or use a browser extension to bypass CORS during development.
-
-- Security: Never commit your App.jsx with your API key to a public repository. For production, always use environment variables (.env).
-
+- Security: Ensure your .env file inside the server folder is listed in your .gitignore file before pushing to GitHub. Never expose your API keys publicly!
+  
 # 📄 License
 
 This project is open-source and available under the MIT License.
