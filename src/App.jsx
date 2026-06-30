@@ -39,8 +39,7 @@ const App = () => {
     setCurrentStep(2);
   };
 
-  // Function to call the Gemini API
-  // Function to call the Gemini API using the official SDK
+// Function to call the Gemini API using the official SDK
   const startAnalysis = async () => {
     if (!resumeContent || !jobContent) {
       setErrorMessage("Please make sure both fields are filled in.");
@@ -53,7 +52,7 @@ const App = () => {
     // Your working AQ API Key
     const API_KEY = "AQ.Ab8RN6LPep-ExsNDbG0KMaHqUsk3oWzhp3DhdO0gyFGT3bLuqg";
 
-    if (API_KEY === "") {
+    if (!API_KEY) {
       setErrorMessage("Missing API Key! Please add it to the code.");
       setLoading(false);
       return;
@@ -82,10 +81,10 @@ const App = () => {
     `;
 
     try {
-      // Initialize the Google Gen AI client with your AQ key
+      // 1. Initialize the Google Gen AI client with your AQ key config object
       const ai = new GoogleGenAI({ apiKey: API_KEY });
 
-      // Run the request against the compatible gemini-2.5-flash model
+      // 2. Call the correct modern text generation API method
       const response = await ai.models.generateContent({
         model: "gemini-2.5-flash",
         contents: userPrompt,
@@ -96,14 +95,14 @@ const App = () => {
         },
       });
 
-      // The SDK auto-extracts the returned text block safely
+      // 3. Extract the text string directly from the response object
       const aiResponseText = response.text;
 
       // Parsing the JSON string into a JavaScript object
       const parsedData = JSON.parse(aiResponseText);
 
       setAnalysisData(parsedData);
-      setCurrentStep(3); // Move to results page
+      setCurrentStep(3); // Move to results dashboard
     } catch (err) {
       console.error(err);
       setErrorMessage("Could not finish analysis. " + err.message);
@@ -111,6 +110,7 @@ const App = () => {
       setLoading(false);
     }
   };
+
 
   // Reset function to clear everything and start over
   const resetApp = () => {
