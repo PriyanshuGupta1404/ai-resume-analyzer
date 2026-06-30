@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { GoogleGenAI } from "@google/genai";
 // Importing icons from the lucide-react library
 import {
   FileText,
@@ -39,6 +40,7 @@ const App = () => {
   };
 
   // Function to call the Gemini API
+  // Function to call the Gemini API using the official SDK
   const startAnalysis = async () => {
     if (!resumeContent || !jobContent) {
       setErrorMessage("Please make sure both fields are filled in.");
@@ -48,16 +50,15 @@ const App = () => {
     setLoading(true);
     setErrorMessage("");
 
-    // API Key - Users should put their key here
-    const API_KEY = "AQ.Ab8RN6LBEoxTtGtfjyZH-CIrZFfDgkHXLF-OOpMt6x2AMug5uA";
+    // Your working AQ API Key
+    const API_KEY = "AQ.Ab8RN6LPep-ExsNDbG0KMaHqUsk3oWzhp3DhdO0gyFGT3bLuqg";
 
     if (API_KEY === "") {
-      setErrorMessage("Missing API Key! Please add it to the code (line 52).");
+      setErrorMessage("Missing API Key! Please add it to the code.");
       setLoading(false);
       return;
     }
 
-    // Creating the instruction for the AI
     const systemInstruction = `
       You are a professional hiring manager. 
       Analyze the resume against the job description.
@@ -81,34 +82,22 @@ const App = () => {
     `;
 
     try {
-      // Basic fetch request to Google Gemini API
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: userPrompt }] }],
-            systemInstruction: { parts: [{ text: systemInstruction }] },
-            generationConfig: {
-              responseMimeType: "application/json",
-              temperature: 0.2,
-            },
-          }),
+      // Initialize the Google Gen AI client with your AQ key
+      const ai = new GoogleGenAI({ apiKey: API_KEY });
+
+      // Run the request against the compatible gemini-2.5-flash model
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: userPrompt,
+        config: {
+          systemInstruction: systemInstruction,
+          responseMimeType: "application/json",
+          temperature: 0.2,
         },
-      );
+      });
 
-      // Checking if response is okay
-      if (!response.ok) {
-        throw new Error(
-          "API call failed. Please check your internet or API key.",
-        );
-      }
-
-      const data = await response.json();
-      const aiResponseText = data.candidates[0].content.parts[0].text;
+      // The SDK auto-extracts the returned text block safely
+      const aiResponseText = response.text;
 
       // Parsing the JSON string into a JavaScript object
       const parsedData = JSON.parse(aiResponseText);
@@ -390,6 +379,6 @@ const App = () => {
       </footer>
     </div>
   );
-};
+};;
 
 export default App;
