@@ -49,7 +49,7 @@ const App = () => {
     setErrorMessage("");
 
     // API Key - Users should put their key here
-    const API_KEY = "AIzaSyDFnT8tnhaWXrmi6cTNsw_cewG7TDugG94";
+    const API_KEY = "AQ.Ab8RN6K57ZV4SwQAKAn1o--dED2Hye5_puzUInF5OlXScOMiwA";
 
     if (API_KEY === "") {
       setErrorMessage("Missing API Key! Please add it to the code (line 52).");
@@ -83,7 +83,7 @@ const App = () => {
     try {
       // Basic fetch request to Google Gemini API
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${API_KEY}`,
         {
           method: "POST",
           headers: {
